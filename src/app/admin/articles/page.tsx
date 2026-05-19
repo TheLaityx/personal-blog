@@ -17,7 +17,7 @@ interface ArticleItem {
   isPublished: boolean;
   moduleId: number;
   collectionId?: number;
-  medias: { id: number; url: string; type: string; filename?: string }[];
+  medias: { id: number; url: string; type: string; filename?: string; sortOrder?: number }[];
 }
 
 export default function AdminArticles() {
