@@ -177,6 +177,11 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
               key={item.name}
               href={item.href}
               ref={(el) => { itemRefs.current[i] = el; }}
+              onClick={() => {
+                if (item.href === "/" && isHome) {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
               onMouseEnter={() => setHoveredIndex(i)}
               className="relative z-10 px-4 py-2.5 text-sm font-medium transition-colors duration-200 rounded-full flex items-center justify-center gap-1.5 whitespace-nowrap"
               style={{ color: "var(--foreground)", cursor: "none" }}

@@ -7,9 +7,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const moduleItem = await prisma.module.findUnique({
       where: { id: Number(id) },
       include: {
-        collections: { orderBy: { sortOrder: "asc" } },
+        collections: {
+          orderBy: { sortOrder: "asc" },
+          include: {
+            articles: {
+              where: { isPublished: true },
+              orderBy: { sortOrder: "asc" },
+              include: { medias: true },
+            },
+          },
+        },
         articles: {
-          where: { isPublished: true },
+          where: { isPublished: true, collectionId: null },
           orderBy: { sortOrder: "asc" },
           include: { medias: true, comments: true },
         },

@@ -95,6 +95,13 @@ body {
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
+/* 非触摸设备：强制隐藏所有系统鼠标指针 */
+@media (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}
+
 a {
   text-decoration: underline;
   text-underline-offset: 3px;

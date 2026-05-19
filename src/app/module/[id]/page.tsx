@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import NavBar from "@/components/NavBar";
-import { ArrowLeft, Folder, FileText, User } from "lucide-react";
+import { ArrowLeft, FileText, User, Send } from "lucide-react";
 import Link from "next/link";
 
 interface Collection {
@@ -37,27 +37,58 @@ interface Config {
 }
 
 export default function ModulePage() {
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
+  const rawId = params?.id;
+  const id = typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : "";
+
   const [module, setModule] = useState<ModuleData | null>(null);
   const [config, setConfig] = useState<Config>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadModule = useCallback(() => {
+    if (!id) {
+      setLoading(false);
+      setModule(null);
+      return;
+    }
+    setLoading(true);
     fetch(`/api/modules/${id}`)
       .then((r) => r.json())
       .then((data) => {
-        setModule(data);
+        if (data.error) {
+          setModule(null);
+        } else {
+          setModule(data);
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setModule(null);
+        setLoading(false);
+      });
+  }, [id]);
+
+  useEffect(() => {
+    loadModule();
+  }, [loadModule]);
+
+  useEffect(() => {
     fetch("/api/config")
       .then((r) => r.json())
-      .then((cfg) => {
-        setConfig(cfg);
-      })
+      .then((cfg) => setConfig(cfg))
       .catch(() => {});
-  }, [id]);
+  }, []);
+
+  useEffect(() => {
+    const handlePageshow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        loadModule();
+      }
+    };
+    window.addEventListener("pageshow", handlePageshow);
+    return () => window.removeEventListener("pageshow", handlePageshow);
+  }, [loadModule]);
 
   if (loading) {
     return (
@@ -67,7 +98,13 @@ export default function ModulePage() {
     );
   }
 
-  if (!module) return null;
+  if (!module) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="opacity-40">模块加载失败</p>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen">
@@ -120,27 +157,9 @@ export default function ModulePage() {
           </div>
 
           {module.collections.length > 0 ? (
-            <div className="space-y-8">
+            <div className="space-y-6 max-w-3xl mx-auto">
               {module.collections.map((col, i) => (
-                <motion.div
-                  key={col.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="glass rounded-3xl p-6 card-shadow"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Folder size={18} style={{ color: "var(--accent)" }} />
-                    <h2 className="text-lg font-bold">{col.name}</h2>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {col.articles?.map((article) => (
-                      <ArticleCard key={article.id} article={article} />
-                    )) || (
-                      <p className="text-sm opacity-40 col-span-full">暂无文章</p>
-                    )}
-                  </div>
-                </motion.div>
+                <CollectionCard key={col.id} collection={col} index={i} />
               ))}
             </div>
           ) : (
@@ -163,10 +182,67 @@ export default function ModulePage() {
   );
 }
 
+function CollectionCard({ collection, index }: { collection: Collection; index: number }) {
+  const router = useRouter();
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div
+        className="rounded-3xl overflow-hidden card-shadow relative flex items-center justify-center transition-transform duration-500 hover:scale-[1.01] w-full"
+        style={{
+          backgroundImage: collection.wallpaper
+            ? `url(${collection.wallpaper})`
+            : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          minHeight: "320px",
+        }}
+        onClick={() => router.push(`/collection/${collection.id}`)}
+      >
+        <div className="absolute inset-0 bg-white/55 dark:bg-black/60" />
+        <h3 className="relative z-10 text-2xl font-bold text-center tracking-wide text-white drop-shadow-lg px-8">
+          {collection.name}
+        </h3>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 12 }}
+          transition={{ duration: 0.35 }}
+          className="absolute bottom-6 left-6 right-6"
+        >
+          <div
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium mx-auto max-w-xs"
+            style={{
+              background: "var(--card-bg)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              border: "1px solid var(--card-border)",
+              color: "var(--foreground)",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+            }}
+          >
+            <Send size={14} />
+            前往
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
 function ArticleCard({ article }: { article: Article }) {
   return (
     <Link href={`/article/${article.id}`}>
-      <div className="glass rounded-2xl overflow-hidden card-shadow hover:scale-[1.02] transition-transform duration-300">
+      <div
+        className="glass rounded-2xl overflow-hidden card-shadow hover:scale-[1.02] transition-transform duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
         {article.coverImage ? (
           <div className="h-40 overflow-hidden">
             <img src={article.coverImage} alt="" className="w-full h-full object-cover" />
