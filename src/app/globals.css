@@ -101,15 +101,11 @@ a {
   color: var(--accent);
 }
 
+html {
+  scrollbar-width: none;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
+  width: 0;
   background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.3);
-  border-radius: 3px;
 }

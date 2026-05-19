@@ -111,17 +111,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main
-      className="min-h-screen"
-      style={{
-        backgroundImage: config.homeWallpaper
-          ? `url(${config.homeWallpaper})`
-          : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <main className="min-h-screen">
       <NavBar
         modules={modules.map((m, i) => ({ id: m.id, name: m.name, href: `#module-${m.id}` }))}
         onModuleClick={scrollToModule}

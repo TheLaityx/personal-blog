@@ -20,7 +20,6 @@ export default function CommentsPage() {
   const [modules, setModules] = useState<{ id: number; name: string }[]>([]);
   const [commentText, setCommentText] = useState("");
   const [authorName, setAuthorName] = useState("");
-  const [homeWallpaper, setHomeWallpaper] = useState("");
 
   const load = () => {
     fetch("/api/comments")
@@ -30,10 +29,6 @@ export default function CommentsPage() {
     fetch("/api/modules")
       .then((r) => r.json())
       .then((mods) => setModules(mods.map((m: { id: number; name: string }) => ({ id: m.id, name: m.name }))))
-      .catch(() => {});
-    fetch("/api/config")
-      .then((r) => r.json())
-      .then((cfg) => setHomeWallpaper(cfg.homeWallpaper || ""))
       .catch(() => {});
   };
 
@@ -56,15 +51,7 @@ export default function CommentsPage() {
   };
 
   return (
-    <main
-      className="min-h-screen"
-      style={{
-        backgroundImage: homeWallpaper ? `url(${homeWallpaper})` : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <main className="min-h-screen">
       <NavBar modules={modules.map((m) => ({ id: m.id, name: m.name, href: `/module/${m.id}` }))} />
 
       <div className="pt-28 px-6 md:px-12 max-w-3xl mx-auto pb-24">

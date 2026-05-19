@@ -41,7 +41,6 @@ export default function ArticlePage() {
   const [article, setArticle] = useState<ArticleData | null>(null);
   const [commentText, setCommentText] = useState("");
   const [authorName, setAuthorName] = useState("");
-  const [homeWallpaper, setHomeWallpaper] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,10 +51,6 @@ export default function ArticlePage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-    fetch("/api/config")
-      .then((r) => r.json())
-      .then((cfg) => setHomeWallpaper(cfg.homeWallpaper || ""))
-      .catch(() => {});
   }, [id]);
 
   const submitComment = async () => {
@@ -117,15 +112,7 @@ export default function ArticlePage() {
   };
 
   return (
-    <main
-      className="min-h-screen"
-      style={{
-        backgroundImage: homeWallpaper ? `url(${homeWallpaper})` : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <main className="min-h-screen">
       <NavBar />
 
       <div className="pt-28 px-6 md:px-12 max-w-3xl mx-auto pb-24">

@@ -61,11 +61,11 @@ export default function CustomCursor() {
       />
       <div
         ref={trailRef}
-        className="fixed top-0 left-0 w-3 h-3 rounded-full pointer-events-none z-[9998]"
+        className="fixed top-0 left-0 w-3 h-3 rounded-full pointer-events-none z-[10000]"
         style={{
-          background: "var(--accent)",
-          opacity: 0.5,
-          filter: "blur(2px)",
+          background: "rgba(255,255,255,0.9)",
+          opacity: 0.6,
+          filter: "blur(1px)",
         }}
       />
     </>

@@ -41,7 +41,6 @@ export default function ModulePage() {
   const router = useRouter();
   const [module, setModule] = useState<ModuleData | null>(null);
   const [config, setConfig] = useState<Config>({});
-  const [homeWallpaper, setHomeWallpaper] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +55,6 @@ export default function ModulePage() {
       .then((r) => r.json())
       .then((cfg) => {
         setConfig(cfg);
-        setHomeWallpaper(cfg.homeWallpaper || "");
       })
       .catch(() => {});
   }, [id]);
@@ -72,15 +70,7 @@ export default function ModulePage() {
   if (!module) return null;
 
   return (
-    <main
-      className="min-h-screen"
-      style={{
-        backgroundImage: homeWallpaper ? `url(${homeWallpaper})` : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <main className="min-h-screen">
       <NavBar />
 
       <div className="pt-24 px-4 md:px-8 max-w-7xl mx-auto flex gap-8">

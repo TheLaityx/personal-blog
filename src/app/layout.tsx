@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "./providers";
 import CustomCursor from "@/components/CustomCursor";
 import ParticleBackground from "@/components/ParticleBackground";
+import GlobalBackground from "@/components/GlobalBackground";
 
 export const metadata: Metadata = {
   title: "BLOG",
@@ -18,6 +19,7 @@ export default function RootLayout({
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="min-h-screen antialiased">
         <ThemeProvider>
+          <GlobalBackground />
           <CustomCursor />
           <ParticleBackground />
           {children}
