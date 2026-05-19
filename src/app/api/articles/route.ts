@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sanitizeString, isValidId } from "@/lib/validate";
 
 export async function GET(req: NextRequest) {
   try {
@@ -7,8 +8,14 @@ export async function GET(req: NextRequest) {
     const moduleId = searchParams.get("moduleId");
     const collectionId = searchParams.get("collectionId");
     const where: Record<string, unknown> = { isPublished: true };
-    if (moduleId) where.moduleId = Number(moduleId);
-    if (collectionId) where.collectionId = Number(collectionId);
+    if (moduleId) {
+      const id = isValidId(moduleId);
+      if (id) where.moduleId = id;
+    }
+    if (collectionId) {
+      const id = isValidId(collectionId);
+      if (id) where.collectionId = id;
+    }
     const articles = await prisma.article.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -23,22 +30,29 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
+    const moduleId = isValidId(data.moduleId);
+    if (!moduleId) {
+      return NextResponse.json({ error: "模块ID无效" }, { status: 400 });
+    }
+
     const article = await prisma.article.create({
       data: {
-        title: data.title,
-        content: data.content,
-        coverImage: data.coverImage,
-        moduleId: data.moduleId,
-        collectionId: data.collectionId || null,
-        isPublished: data.isPublished ?? true,
-        sortOrder: data.sortOrder ?? 0,
+        title: sanitizeString(data.title, 200) || null,
+        content: sanitizeString(data.content, 50000) || null,
+        coverImage: sanitizeString(data.coverImage, 500) || null,
+        moduleId,
+        collectionId: isValidId(data.collectionId),
+        isPublished: Boolean(data.isPublished),
+        sortOrder: Number(data.sortOrder) || 0,
       },
       include: { medias: true },
     });
-    if (data.medias?.length) {
+    if (Array.isArray(data.medias) && data.medias.length) {
       await prisma.media.createMany({
         data: data.medias.map((m: { url: string; type: string; filename: string }) => ({
-          ...m,
+          url: sanitizeString(m.url, 500) || "",
+          type: sanitizeString(m.type, 50) || "file",
+          filename: sanitizeString(m.filename, 200) || "",
           articleId: article.id,
         })),
       });
