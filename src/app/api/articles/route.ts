@@ -49,10 +49,11 @@ export async function POST(req: NextRequest) {
     });
     if (Array.isArray(data.medias) && data.medias.length) {
       await prisma.media.createMany({
-        data: data.medias.map((m: { url: string; type: string; filename: string }) => ({
+        data: data.medias.map((m: { url: string; type: string; filename: string; sortOrder?: number }) => ({
           url: sanitizeString(m.url, 500) || "",
           type: sanitizeString(m.type, 50) || "file",
           filename: sanitizeString(m.filename, 200) || "",
+          sortOrder: Number(m.sortOrder) || 0,
           articleId: article.id,
         })),
       });

@@ -5,7 +5,7 @@ import { mkdir } from "fs/promises";
 import { rateLimit } from "@/lib/rate-limit";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4"];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 100 * 1024 * 1024; // 100MB
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "不支持的文件类型" }, { status: 400 });
     }
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: "文件大小超过10MB限制" }, { status: 400 });
+      return NextResponse.json({ error: "文件大小超过100MB限制" }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();

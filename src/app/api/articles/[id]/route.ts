@@ -47,6 +47,21 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         sortOrder: data.sortOrder,
       },
     });
+    // 更新媒体：先删除旧的，再创建新的
+    if (Array.isArray(data.medias)) {
+      await prisma.media.deleteMany({ where: { articleId: Number(id) } });
+      if (data.medias.length) {
+        await prisma.media.createMany({
+          data: data.medias.map((m: { url: string; type: string; filename: string; sortOrder?: number }) => ({
+            url: String(m.url || ""),
+            type: String(m.type || "file"),
+            filename: String(m.filename || ""),
+            sortOrder: Number(m.sortOrder) || 0,
+            articleId: Number(id),
+          })),
+        });
+      }
+    }
     return NextResponse.json(article);
   } catch (e) {
     return NextResponse.json({ error: "更新失败" }, { status: 500 });

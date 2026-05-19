@@ -7,7 +7,10 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ moduleCount: 0, articleCount: 0, commentCount: 0, mediaCount: 0 });
 
   useEffect(() => {
-    fetch("/api/admin/stats")
+    const token = localStorage.getItem("adminToken");
+    fetch("/api/admin/stats", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((r) => r.json())
       .then(setStats)
       .catch(() => {});

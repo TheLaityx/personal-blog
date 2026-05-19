@@ -80,27 +80,43 @@ export default function ArticlePage() {
 
   const renderContent = (content?: string) => {
     if (!content) return <p className="opacity-40 italic">暂无内容</p>;
-    const sortedMedias = [...article.medias].sort((a, b) => a.sortOrder - b.sortOrder);
+    const sortedMedias = [...(article.medias || [])].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
     const parts = content.split(/(\[MEDIA:\d+\])/g);
-    let mediaIndex = 0;
+    let fallbackIndex = 0;
     return parts.map((part, i) => {
       const match = part.match(/\[MEDIA:(\d+)\]/);
       if (match) {
-        const media = sortedMedias[mediaIndex];
-        mediaIndex++;
-        if (!media) return null;
+        const targetPid = Number(match[1]);
+        // 新数据：sortOrder = pid - 1，即 [MEDIA:1] -> sortOrder=0, [MEDIA:2] -> sortOrder=1
+        let media = sortedMedias.find((m) => (m.sortOrder || 0) === targetPid - 1);
+        // 兼容旧数据：sortOrder 可能等于 pid（如果之前保存过 sortOrder = pid 的草稿）
+        if (!media) {
+          media = sortedMedias.find((m) => (m.sortOrder || 0) === targetPid);
+        }
+        // 最终 fallback：按出现顺序取
+        if (!media) {
+          media = sortedMedias[fallbackIndex];
+        }
+        fallbackIndex++;
+        if (!media) {
+          return (
+            <div key={i} className="w-full rounded-2xl my-4 bg-black/5 flex items-center justify-center py-12 text-sm opacity-40">
+              [媒体加载失败]
+            </div>
+          );
+        }
         if (media.type === "video") {
           return (
             <video key={i} src={media.url} controls className="w-full rounded-2xl my-4" />
           );
         }
         return (
-          <img key={i} src={media.url} alt={media.filename} className="w-full rounded-2xl my-4 object-cover" />
+          <img key={i} src={media.url} alt={media.filename || ""} className="w-full rounded-2xl my-4 object-cover" />
         );
       }
       if (!part.trim()) return null;
       return (
-        <div key={i} className="prose max-w-none">
+        <div key={i}>
           {part.split("\n").map((line, j) => (
             <p key={j} className="my-2 leading-relaxed">
               {line}

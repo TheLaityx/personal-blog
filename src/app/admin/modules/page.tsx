@@ -74,20 +74,18 @@ export default function AdminModules() {
     const newIndex = direction === "up" ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= modules.length) return;
 
-    const current = modules[index];
-    const target = modules[newIndex];
+    const reordered = [...modules];
+    [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
 
-    // 交换 sortOrder
-    await fetch(`/api/modules/${current.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sortOrder: target.sortOrder }),
-    });
-    await fetch(`/api/modules/${target.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sortOrder: current.sortOrder }),
-    });
+    await Promise.all(
+      reordered.map((mod, i) =>
+        fetch(`/api/modules/${mod.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: i }),
+        })
+      )
+    );
     load();
   };
 
