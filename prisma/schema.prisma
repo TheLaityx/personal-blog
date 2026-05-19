@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  avatar    String?
+  nickname  String?
+  createdAt DateTime @default(now())
+}
+
+model Module {
+  id          Int          @id @default(autoincrement())
+  name        String
+  icon        String?
+  description String?
+  wallpaper   String?
+  sortOrder   Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  collections Collection[]
+  articles    Article[]
+}
+
+model Collection {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  wallpaper   String?
+  sortOrder   Int       @default(0)
+  moduleId    Int
+  module      Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+}
+
+model Article {
+  id           Int         @id @default(autoincrement())
+  title        String?
+  content      String?
+  coverImage   String?
+  moduleId     Int
+  module       Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  collectionId Int?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  medias       Media[]
+  comments     Comment[]
+  isPublished  Boolean     @default(true)
+  sortOrder    Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  type      String
+  url       String
+  filename  String
+  articleId Int?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  content    String
+  author     String    @default("匿名")
+  email      String?
+  articleId  Int?
+  article    Article?  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  parentId   Int?
+  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    Comment[] @relation("CommentReplies")
+  isApproved Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+}
+
+model SiteConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
