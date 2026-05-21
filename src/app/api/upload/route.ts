@@ -4,8 +4,22 @@ import { join } from "path";
 import { mkdir } from "fs/promises";
 import { rateLimit } from "@/lib/rate-limit";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4"];
-const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+const ALLOWED_TYPES = [
+  "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/heic", "image/heif",
+  "video/mp4", "video/webm", "video/mov", "video/quicktime"
+];
+const MAX_SIZE = 500 * 1024 * 1024; // 500MB
+
+const ALLOWED_EXTS = ["jpg", "jpeg", "png", "gif", "webp", "heic", "heif", "mp4", "webm", "mov"];
+
+function isAllowedFile(file: File): boolean {
+  // 如果 type 已知且在白名单
+  if (file.type && ALLOWED_TYPES.includes(file.type)) return true;
+  // 如果 type 为空，用扩展名判断
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  if (ALLOWED_EXTS.includes(ext)) return true;
+  return false;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,11 +36,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "没有文件" }, { status: 400 });
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json({ error: "不支持的文件类型" }, { status: 400 });
+    if (!isAllowedFile(file)) {
+      return NextResponse.json({ error: `不支持的文件类型: ${file.type || "unknown"} (${file.name})` }, { status: 400 });
     }
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: "文件大小超过100MB限制" }, { status: 400 });
+      return NextResponse.json({ error: "文件大小超过500MB限制" }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -39,9 +53,9 @@ export async function POST(req: NextRequest) {
     const filepath = join(uploadsDir, filename);
     await writeFile(filepath, buffer);
 
-    const type = file.type.startsWith("image/")
+    const type = file.type?.startsWith("image/")
       ? "image"
-      : file.type.startsWith("video/")
+      : file.type?.startsWith("video/")
       ? "video"
       : "file";
 
@@ -51,6 +65,7 @@ export async function POST(req: NextRequest) {
       type,
     });
   } catch (e) {
-    return NextResponse.json({ error: "上传失败" }, { status: 500 });
+    console.error("Upload error:", e);
+    return NextResponse.json({ error: "服务器内部错误，上传失败" }, { status: 500 });
   }
 }
