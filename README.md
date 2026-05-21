@@ -106,12 +106,11 @@ npm start
 ---
 
 ## 截图
+<img width="2543" height="1326" alt="image" src="https://github.com/user-attachments/assets/d51206d9-95a6-451e-bcbe-34520a651de3" />
 
-> 首页 Hero 区域 + 蛇形模块卡片 + 滚动生长曲线
+<img width="2537" height="1315" alt="image" src="https://github.com/user-attachments/assets/8f341c2c-4c01-4c9e-b3db-0c25eb9d4620" />
 
-> 管理后台仪表盘
 
----
 
 ## License
 
