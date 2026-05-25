@@ -206,7 +206,7 @@ function CollectionCard({ collection, index }: { collection: Collection; index: 
         }}
         onClick={() => router.push(`/collection/${collection.id}`)}
       >
-        <div className="absolute inset-0 bg-white/55 dark:bg-black/60" />
+        <div className="absolute inset-0 bg-white/30 dark:bg-black/60" />
         <h3 className="relative z-10 text-2xl font-bold text-center tracking-wide text-white drop-shadow-lg px-8">
           {collection.name}
         </h3>
