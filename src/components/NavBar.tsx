@@ -126,7 +126,7 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
   };
 
   return (
-    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xl">
+    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
       {/* Desktop / Tablet */}
       <div
         ref={navRef}
@@ -213,7 +213,7 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
       </div>
 
       {/* Mobile */}
-      <div className="md:hidden">
+      <div className="md:hidden w-[calc(100vw-2rem)] max-w-xl">
         <div
           className="glass-nav rounded-full px-4 py-2.5 flex items-center justify-between relative"
           style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}
