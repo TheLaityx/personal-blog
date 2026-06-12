@@ -41,8 +41,8 @@ export default function ModuleCard({ module, index }: ModuleCardProps) {
           minHeight: "240px",
         }}
       >
-        {/* 半透明遮罩，降低不透明度让背景透出 */}
-        <div className="absolute inset-0 bg-white/30 dark:bg-black/60" />
+        {/* 半透明遮罩，深色底让背景壁纸清晰透出 */}
+        <div className="absolute inset-0 bg-black/50" />
 
         {/* 模块名 - 水平垂直居中，固定白色确保可读 */}
         <h3 className="relative z-10 text-2xl font-bold text-center tracking-wide text-white drop-shadow-lg">
