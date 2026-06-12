@@ -222,8 +222,8 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex,
           onClick={toggleParticles}
           className="relative z-10 p-2.5 rounded-full transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/10"
           style={{ cursor: "none", opacity: particles ? 1 : 0.4 }}
-          aria-label="切换粒子效果"
-          title="粒子效果"
+          aria-label="切换粒子"
+          title="粒子"
         >
           <Sparkles size={16} />
         </button>
@@ -345,7 +345,7 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex,
                   }}
                 >
                   <Sparkles size={16} />
-                  粒子效果
+                  粒子
                 </button>
                 <button
                   onClick={() => { toggleTheme(); }}
