@@ -116,6 +116,7 @@ export default function HomePage() {
         modules={modules.map((m, i) => ({ id: m.id, name: m.name, href: `#module-${m.id}` }))}
         onModuleClick={scrollToModule}
         scrollActiveIndex={activeModuleIndex}
+        heroVisible={heroVisible}
       />
 
       {/* Hero 区域 */}

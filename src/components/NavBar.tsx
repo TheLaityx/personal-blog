@@ -17,12 +17,13 @@ interface NavBarProps {
   modules?: NavItem[];
   onModuleClick?: (index: number) => void;
   scrollActiveIndex?: number;
+  heroVisible?: boolean;
 }
 
 const HomeIcon = <Home size={16} />;
 const CommentIcon = <MessageCircle size={16} />;
 
-export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex }: NavBarProps) {
+export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex, heroVisible = true }: NavBarProps) {
   const { theme, toggleTheme, particles, toggleParticles } = useTheme();
   const pathname = usePathname();
   const navRef = useRef<HTMLDivElement>(null);
@@ -31,6 +32,11 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
   const [pillStyle, setPillStyle] = useState({ width: 0, height: 0, x: 0, y: 0 });
   const [mobileOpen, setMobileOpen] = useState(false);
   const itemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([]);
+
+  // 手机端滚动标题动画状态
+  const [displayTitle, setDisplayTitle] = useState({ name: "首页", key: 0 });
+  const [slideDirection, setSlideDirection] = useState(1);
+  const prevActiveIndexRef = useRef(0);
 
   const isHome = pathname === "/";
   const isCommentsPage = pathname === "/comments";
@@ -87,6 +93,15 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
     }
   }, [pathname, items, isHome, scrollActiveIndex]);
 
+  // 手机端标题动画：监听 activeIndex 变化
+  useEffect(() => {
+    const newName = items[activeIndex]?.name || "首页";
+    const direction = activeIndex > prevActiveIndexRef.current ? 1 : -1;
+    prevActiveIndexRef.current = activeIndex;
+    setSlideDirection(direction);
+    setDisplayTitle({ name: newName, key: Date.now() });
+  }, [activeIndex, items]);
+
   const targetIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
 
   const updatePill = useCallback(
@@ -123,6 +138,17 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
       onModuleClick(i - 1);
     }
     setMobileOpen(false);
+  };
+
+  // 手机端点击标题跳转
+  const handleTitleClick = () => {
+    if (!isHome) return;
+    if (activeIndex === 0) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (activeIndex > 0 && activeIndex < items.length - 1) {
+      // 模块索引 = activeIndex - 1
+      onModuleClick?.(activeIndex - 1);
+    }
   };
 
   return (
@@ -215,12 +241,32 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
       {/* Mobile */}
       <div className="md:hidden w-[calc(100vw-2rem)] max-w-xl">
         <div
-          className="glass-nav rounded-full px-4 py-2.5 flex items-center justify-between relative"
+          className="glass-nav rounded-full px-4 py-2.5 flex items-center relative"
           style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}
         >
-          <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-            CelesteRyder
-          </span>
+          {/* 可点击的滚动标题 - 居中 */}
+          <button
+            onClick={handleTitleClick}
+            className="flex-1 flex items-center justify-center bg-transparent border-0"
+            style={{ cursor: isHome ? "pointer" : "default" }}
+          >
+            <div className="relative h-5 overflow-hidden w-full flex items-center justify-center">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={displayTitle.key}
+                  initial={{ y: slideDirection * 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: slideDirection * -20, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="absolute text-sm font-medium whitespace-nowrap"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  {displayTitle.name}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </button>
+
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="p-1.5 rounded-full transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/10"
