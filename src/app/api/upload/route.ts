@@ -3,6 +3,7 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 import { mkdir } from "fs/promises";
 import { rateLimit } from "@/lib/rate-limit";
+import { checkAdmin } from "@/lib/admin-auth";
 
 const ALLOWED_TYPES = [
   "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/heic", "image/heif",
@@ -23,11 +24,14 @@ function isAllowedFile(file: File): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limit by IP: 10 uploads per 10 minutes
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "unknown";
-    const limit = rateLimit(`upload:${ip}`, 10, 10 * 60000);
-    if (!limit.allowed) {
-      return NextResponse.json({ error: "上传过于频繁，请稍后再试" }, { status: 429 });
+    // Rate limit by IP: 10 uploads per 10 minutes (skip for logged-in admin)
+    const adminAuth = checkAdmin(req);
+    if (!adminAuth.ok) {
+      const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "unknown";
+      const limit = rateLimit(`upload:${ip}`, 10, 10 * 60000);
+      if (!limit.allowed) {
+        return NextResponse.json({ error: "上传过于频繁，请稍后再试" }, { status: 429 });
+      }
     }
 
     const formData = await req.formData();
