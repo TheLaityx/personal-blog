@@ -75,31 +75,33 @@ export default function CommentsPage() {
             <Send size={16} style={{ color: "var(--accent)" }} />
             <span className="text-sm font-medium">发表评论</span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               placeholder="昵称"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              className="flex-shrink-0 w-28 px-4 py-2.5 rounded-xl text-sm glass outline-none"
+              className="flex-shrink-0 w-full sm:w-28 px-4 py-2.5 rounded-xl text-sm glass outline-none"
               style={{ background: "var(--card-bg)" }}
             />
-            <input
-              type="text"
-              placeholder="写下你的评论..."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitComment()}
-              className="flex-1 px-4 py-2.5 rounded-xl text-sm glass outline-none"
-              style={{ background: "var(--card-bg)" }}
-            />
-            <button
-              onClick={submitComment}
-              className="px-4 py-2.5 rounded-xl text-sm font-medium"
-              style={{ background: "var(--accent)", color: "#fff" }}
-            >
-              <Send size={14} />
-            </button>
+            <div className="flex gap-3 flex-1">
+              <input
+                type="text"
+                placeholder="写下你的评论..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submitComment()}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm glass outline-none"
+                style={{ background: "var(--card-bg)" }}
+              />
+              <button
+                onClick={submitComment}
+                className="px-4 py-2.5 rounded-xl text-sm font-medium flex-shrink-0"
+                style={{ background: "var(--accent)", color: "#fff" }}
+              >
+                <Send size={14} />
+              </button>
+            </div>
           </div>
         </motion.div>
 
