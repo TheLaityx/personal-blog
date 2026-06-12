@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
-import { Sun, Moon, MessageCircle, Home, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sun, Moon, MessageCircle, Home, Sparkles, Menu, X } from "lucide-react";
 import { useTheme } from "@/app/providers";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,7 +19,6 @@ interface NavBarProps {
   scrollActiveIndex?: number;
 }
 
-// 静态图标组件，避免每次渲染重新创建 JSX
 const HomeIcon = <Home size={16} />;
 const CommentIcon = <MessageCircle size={16} />;
 
@@ -30,12 +29,12 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pillStyle, setPillStyle] = useState({ width: 0, height: 0, x: 0, y: 0 });
+  const [mobileOpen, setMobileOpen] = useState(false);
   const itemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([]);
 
   const isHome = pathname === "/";
   const isCommentsPage = pathname === "/comments";
 
-  // 用 useMemo 缓存 items，避免无限 effect 重跑
   const items = useMemo(() => {
     const list: { name: string; href: string; icon: React.ReactNode; isScroll?: boolean }[] = [
       { name: "首页", href: "/", icon: HomeIcon },
@@ -56,7 +55,6 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
     return list;
   }, [modules, isHome, isCommentsPage]);
 
-  // 根据路径或滚动位置设置 activeIndex
   useEffect(() => {
     if (isHome && scrollActiveIndex !== undefined && scrollActiveIndex >= 0) {
       setActiveIndex(1 + scrollActiveIndex);
@@ -67,14 +65,12 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
       return;
     }
 
-    // 直接匹配 pathname
     let idx = items.findIndex((item) => item.href === pathname);
     if (idx !== -1) {
       setActiveIndex(idx);
       return;
     }
 
-    // 模块详情页 /module/:id
     const moduleMatch = pathname.match(/^\/module\/(\d+)$/);
     if (moduleMatch) {
       const moduleId = Number(moduleMatch[1]);
@@ -85,7 +81,6 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
       }
     }
 
-    // 文章详情页 /article/:id → 高亮首页
     if (pathname.startsWith("/article/")) {
       setActiveIndex(0);
       return;
@@ -127,13 +122,15 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
     if (isScroll && onModuleClick) {
       onModuleClick(i - 1);
     }
+    setMobileOpen(false);
   };
 
   return (
-    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+    <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xl">
+      {/* Desktop / Tablet */}
       <div
         ref={navRef}
-        className="glass-nav rounded-full px-2 flex items-center gap-1 relative"
+        className="glass-nav rounded-full px-2 hidden md:flex items-center gap-1 relative"
         style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08)", cursor: "none" }}
         onMouseLeave={() => setHoveredIndex(null)}
       >
@@ -181,6 +178,7 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
                 if (item.href === "/" && isHome) {
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }
+                setMobileOpen(false);
               }}
               onMouseEnter={() => setHoveredIndex(i)}
               className="relative z-10 px-4 py-2.5 text-sm font-medium transition-colors duration-200 rounded-full flex items-center justify-center gap-1.5 whitespace-nowrap"
@@ -212,6 +210,114 @@ export default function NavBar({ modules = [], onModuleClick, scrollActiveIndex 
         >
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </button>
+      </div>
+
+      {/* Mobile */}
+      <div className="md:hidden">
+        <div
+          className="glass-nav rounded-full px-4 py-2.5 flex items-center justify-between relative"
+          style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}
+        >
+          <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+            CelesteRyder
+          </span>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-1.5 rounded-full transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/10"
+            aria-label="菜单"
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="glass-nav mt-2 rounded-2xl p-2 flex flex-col gap-0.5 overflow-hidden"
+              style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}
+            >
+              {items.map((item, i) =>
+                item.isScroll && isHome ? (
+                  <button
+                    key={item.name}
+                    onClick={() => handleItemClick(i, true)}
+                    className="relative z-10 px-4 py-3 text-sm font-medium transition-colors duration-200 rounded-xl flex items-center gap-2.5 bg-transparent border-0 w-full text-left"
+                    style={{
+                      color: "var(--foreground)",
+                      background: activeIndex === i
+                        ? theme === "dark"
+                          ? "rgba(255,255,255,0.10)"
+                          : "rgba(0,113,227,0.10)"
+                        : "transparent",
+                    }}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </button>
+                ) : (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => {
+                      if (item.href === "/" && isHome) {
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                      setMobileOpen(false);
+                    }}
+                    className="relative z-10 px-4 py-3 text-sm font-medium transition-colors duration-200 rounded-xl flex items-center gap-2.5"
+                    style={{
+                      color: "var(--foreground)",
+                      background: activeIndex === i
+                        ? theme === "dark"
+                          ? "rgba(255,255,255,0.10)"
+                          : "rgba(0,113,227,0.10)"
+                        : "transparent",
+                    }}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </Link>
+                )
+              )}
+
+              <div className="h-px mx-2 my-1 opacity-15" style={{ background: "var(--foreground)" }} />
+
+              <div className="flex items-center gap-1 px-2 py-1">
+                <button
+                  onClick={() => { toggleParticles(); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                  style={{
+                    opacity: particles ? 1 : 0.5,
+                    background: theme === "dark"
+                      ? "rgba(255,255,255,0.06)"
+                      : "rgba(0,113,227,0.06)",
+                    color: "var(--foreground)",
+                  }}
+                >
+                  <Sparkles size={16} />
+                  粒子效果
+                </button>
+                <button
+                  onClick={() => { toggleTheme(); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                  style={{
+                    background: theme === "dark"
+                      ? "rgba(255,255,255,0.06)"
+                      : "rgba(0,113,227,0.06)",
+                    color: "var(--foreground)",
+                  }}
+                >
+                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                  {theme === "dark" ? "亮色" : "暗色"}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

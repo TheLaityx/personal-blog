@@ -49,3 +49,10 @@ dev.log
 # agent files
 AGENTS.md
 CLAUDE.md
+
+# Database & uploads - never commit
+prisma/dev.db
+prisma/dev.db-journal
+prisma/dev.db-wal
+prisma/dev.db-shm
+public/uploads/
